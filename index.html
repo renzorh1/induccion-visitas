@@ -3,147 +3,497 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Video de inducción</title>
+  <title>Inducción de Visitas</title>
   <style>
+    :root {
+      --bg: #e7e0e2;
+      --navy: #062b4f;
+      --navy-2: #0d3a66;
+      --text: #1f2937;
+      --muted: #667085;
+      --card: #ffffff;
+      --disabled: #a7b0ba;
+      --success: #1f7a3d;
+      --shadow: 0 10px 30px rgba(6, 43, 79, 0.10);
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+    }
+
     * {
       box-sizing: border-box;
     }
 
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
       margin: 0;
-      background: #e7e0e2;
+      background:
+        radial-gradient(circle at top, rgba(255,255,255,0.55), transparent 35%),
+        var(--bg);
       font-family: Arial, sans-serif;
-      color: #062b4f;
+      color: var(--text);
+    }
+
+    .page {
+      min-height: 100vh;
+      padding: 20px 14px 32px;
     }
 
     .container {
-      max-width: 420px;
+      max-width: 430px;
       margin: 0 auto;
-      padding: 20px 16px 30px;
+    }
+
+    .hero-card {
+      background: rgba(255, 255, 255, 0.38);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.45);
+      border-radius: 28px;
+      padding: 22px 18px 18px;
+      box-shadow: var(--shadow);
       text-align: center;
+      margin-bottom: 16px;
     }
 
     .welcome {
-      font-size: 1.9rem;
-      font-weight: 700;
-      color: #000000;
-      margin-bottom: 6px;
+      font-size: 2.1rem;
+      font-weight: 800;
+      color: #000;
+      margin: 0 0 6px;
+      letter-spacing: -0.8px;
     }
 
     .subtitle-top {
-      font-size: 1.1rem;
-      font-weight: 400;
-      color: #000000;
-      margin-bottom: 18px;
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: #111827;
+      margin-bottom: 16px;
     }
 
     .logo {
-      width: 95px;
-      margin-bottom: 12px;
+      width: 100px;
+      height: auto;
+      display: block;
+      margin: 0 auto 10px;
     }
 
     .title {
-      font-size: 2rem;
+      margin: 0;
+      font-size: 2.35rem;
+      line-height: 0.98;
       font-weight: 800;
-      line-height: 1.05;
-      margin-bottom: 20px;
-      color: #062b4f;
+      color: var(--navy);
+      letter-spacing: -1px;
     }
 
-    .video-box {
-      width: 100%;
-      border-radius: 18px;
+    .panel {
+      background: var(--card);
+      border-radius: var(--radius-xl);
+      padding: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .video-shell {
+      background: #0b0b0b;
+      border-radius: 22px;
       overflow: hidden;
-      background: #000;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.10);
+      position: relative;
     }
 
-    .video-frame {
+    .video-shell::before {
+      content: "";
+      display: block;
       width: 100%;
-      aspect-ratio: 16 / 9;
+      padding-top: 56.25%;
+    }
+
+    .video-player,
+    .video-placeholder {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .video-player iframe,
+    #player {
+      width: 100%;
+      height: 100%;
+      display: block;
       border: 0;
-      display: block;
     }
 
-    .button {
-      display: block;
-      width: 100%;
-      padding: 16px;
-      border-radius: 14px;
-      background: #9aa3ad;
-      color: white;
-      text-decoration: none;
+    .video-placeholder {
+      background:
+        linear-gradient(rgba(6, 43, 79, 0.15), rgba(6, 43, 79, 0.20)),
+        url("https://img.youtube.com/vi/kpNMgjL8YMo/hqdefault.jpg") center/cover no-repeat;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .play-badge {
+      width: 82px;
+      height: 58px;
+      border-radius: 18px;
+      background: rgba(255, 0, 0, 0.92);
+      position: relative;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+      transition: transform 0.2s ease;
+    }
+
+    .video-placeholder:active .play-badge {
+      transform: scale(0.96);
+    }
+
+    .play-badge::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-35%, -50%);
+      width: 0;
+      height: 0;
+      border-top: 12px solid transparent;
+      border-bottom: 12px solid transparent;
+      border-left: 20px solid white;
+    }
+
+    .status-card {
+      margin-top: 14px;
+      background: #f8fafc;
+      border: 1px solid #e7edf3;
+      border-radius: var(--radius-lg);
+      padding: 14px 14px 12px;
+    }
+
+    .status-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .status-title {
+      font-size: 0.96rem;
       font-weight: 700;
-      pointer-events: none;
-      transition: background 0.3s ease;
+      color: var(--navy);
+      margin: 0;
     }
 
-    .button.enabled {
-      background: #062b4f;
-      pointer-events: auto;
+    .status-pill {
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #eef2f6;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .status-pill.ready {
+      background: rgba(31, 122, 61, 0.12);
+      color: var(--success);
+    }
+
+    .progress-wrap {
+      width: 100%;
+      height: 12px;
+      background: #e6ebf1;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--navy), var(--navy-2));
+      border-radius: 999px;
+      transition: width 0.2s linear;
     }
 
     .counter {
-      margin-top: 12px;
-      color: #4d5b6a;
-      font-size: 0.95rem;
+      font-size: 0.93rem;
+      color: var(--muted);
+      line-height: 1.45;
+      min-height: 22px;
+    }
+
+    .cta {
+      margin-top: 14px;
+    }
+
+    .button {
+      width: 100%;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      text-decoration: none;
+      padding: 16px 18px;
+      border-radius: 16px;
+      background: var(--disabled);
+      color: white;
+      font-weight: 800;
+      font-size: 1.03rem;
+      letter-spacing: -0.2px;
+      pointer-events: none;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.10);
+      transition: transform 0.2s ease, background 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .button.enabled {
+      background: linear-gradient(180deg, var(--navy-2), var(--navy));
+      pointer-events: auto;
+      box-shadow: 0 14px 28px rgba(6, 43, 79, 0.24);
+    }
+
+    .button.enabled:hover {
+      transform: translateY(-1px);
+    }
+
+    .helper {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 0.84rem;
+      color: var(--muted);
+    }
+
+    .error-box {
+      display: none;
+      margin-top: 14px;
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      color: #9a3412;
+      border-radius: 16px;
+      padding: 12px;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    .error-box.show {
+      display: block;
+    }
+
+    @media (max-width: 380px) {
+      .welcome {
+        font-size: 1.9rem;
+      }
+
+      .title {
+        font-size: 2.05rem;
+      }
+
+      .button {
+        font-size: 0.98rem;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="welcome">¡Bienvenido!</div>
-    <div class="subtitle-top">Inducción de Visitas</div>
+  <div class="page">
+    <div class="container">
+      <section class="hero-card">
+        <h1 class="welcome">¡Bienvenido!</h1>
+        <div class="subtitle-top">Inducción de Visitas</div>
 
-    <img
-      class="logo"
-      src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Repsol_2025_%28vertical%29.svg/960px-Repsol_2025_%28vertical%29.svg.png"
-      alt="Repsol"
-    />
+        <img
+          class="logo"
+          src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Repsol_2025_%28vertical%29.svg/960px-Repsol_2025_%28vertical%29.svg.png"
+          alt="Repsol"
+        />
 
-    <div class="title">Video de<br>inducción</div>
+        <h2 class="title">Video de<br>inducción</h2>
+      </section>
 
-    <div class="video-box">
-      <iframe
-        class="video-frame"
-        src="https://www.youtube-nocookie.com/embed/kpNMgjL8YMo?rel=0"
-        title="Video de inducción"
-        loading="lazy"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen>
-      </iframe>
+      <section class="panel">
+        <div class="video-shell">
+          <div
+            id="videoPlaceholder"
+            class="video-placeholder"
+            role="button"
+            aria-label="Reproducir video de inducción"
+            tabindex="0"
+          >
+            <div class="play-badge"></div>
+          </div>
+
+          <div id="playerContainer" class="video-player" style="display:none;">
+            <div id="player"></div>
+          </div>
+        </div>
+
+        <div class="status-card">
+          <div class="status-top">
+            <p class="status-title">Estado de visualización</p>
+            <span id="statusPill" class="status-pill">Pendiente</span>
+          </div>
+
+          <div class="progress-wrap" aria-hidden="true">
+            <div id="progressBar" class="progress-bar"></div>
+          </div>
+
+          <div id="counter" class="counter">
+            Reproduce y termina el video para habilitar el registro.
+          </div>
+        </div>
+
+        <div class="cta">
+          <a
+            id="asistenciaBtn"
+            class="button"
+            href="https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=TyElClLuPEi5a9x58yJ6b9qTKegBo1NNnvwGkwl8VLJUOUpCQTE5WFlGVlFNRDlPRUkwSVlXUVlTSiQlQCN0PWcu"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-disabled="true"
+          >
+            Registra Aquí tu Asistencia
+          </a>
+          <div class="helper">El botón se activará cuando el video finalice.</div>
+        </div>
+
+        <div id="errorBox" class="error-box">
+          No se pudo cargar el reproductor embebido. Si el video está restringido por YouTube, deberás usar otro video o abrirlo directamente en YouTube.
+        </div>
+      </section>
     </div>
-
-    <a
-      id="asistenciaBtn"
-      class="button"
-      href="https://www.google.com/webhp?hl=es&sa=X&ved=0ahUKEwizvMm6x4uTAxUylJUCHU9lMKYQPAgK"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      Registra Aquí tu Asistencia
-    </a>
-
-    <div id="counter" class="counter">Habilitado en 20 segundos</div>
   </div>
 
   <script>
+    const VIDEO_ID = "kpNMgjL8YMo";
     const btn = document.getElementById("asistenciaBtn");
     const counter = document.getElementById("counter");
-    let seconds = 20;
+    const progressBar = document.getElementById("progressBar");
+    const statusPill = document.getElementById("statusPill");
+    const placeholder = document.getElementById("videoPlaceholder");
+    const playerContainer = document.getElementById("playerContainer");
+    const errorBox = document.getElementById("errorBox");
 
-    const interval = setInterval(() => {
-      seconds--;
+    let player = null;
+    let progressInterval = null;
+    let playerReady = false;
+    let hasStarted = false;
 
-      if (seconds > 0) {
-        counter.textContent = `Habilitado en ${seconds} segundos`;
-      } else {
-        clearInterval(interval);
-        btn.classList.add("enabled");
-        counter.textContent = "Ya puedes registrar tu asistencia";
+    function setStatus(text, ready = false) {
+      statusPill.textContent = text;
+      statusPill.classList.toggle("ready", ready);
+    }
+
+    function enableButton() {
+      btn.classList.add("enabled");
+      btn.setAttribute("aria-disabled", "false");
+      progressBar.style.width = "100%";
+      counter.textContent = "Video completado. Ya puedes registrar tu asistencia.";
+      setStatus("Completado", true);
+      clearInterval(progressInterval);
+    }
+
+    function updateProgress() {
+      if (!player || typeof player.getDuration !== "function" || typeof player.getCurrentTime !== "function") {
+        return;
       }
-    }, 1000);
+
+      const duration = player.getDuration();
+      const current = player.getCurrentTime();
+
+      if (!duration || duration <= 0) {
+        return;
+      }
+
+      const percent = Math.min((current / duration) * 100, 100);
+      progressBar.style.width = percent + "%";
+
+      const secondsLeft = Math.max(Math.ceil(duration - current), 0);
+
+      if (secondsLeft > 0) {
+        counter.textContent = `Visualizando video... faltan aproximadamente ${secondsLeft} segundos para completar la inducción.`;
+      }
+    }
+
+    function startProgressTracking() {
+      clearInterval(progressInterval);
+      progressInterval = setInterval(updateProgress, 500);
+    }
+
+    function stopProgressTracking() {
+      clearInterval(progressInterval);
+    }
+
+    function loadPlayer() {
+      placeholder.style.display = "none";
+      playerContainer.style.display = "block";
+      counter.textContent = "Cargando video...";
+      setStatus("Cargando");
+
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      document.head.appendChild(tag);
+    }
+
+    placeholder.addEventListener("click", loadPlayer);
+    placeholder.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        loadPlayer();
+      }
+    });
+
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player("player", {
+        videoId: VIDEO_ID,
+        playerVars: {
+          rel: 0,
+          playsinline: 1,
+          modestbranding: 1
+        },
+        events: {
+          onReady: onPlayerReady,
+          onStateChange: onPlayerStateChange,
+          onError: onPlayerError
+        }
+      });
+    }
+
+    function onPlayerReady() {
+      playerReady = true;
+      counter.textContent = "Video cargado. Inicia la reproducción y míralo completo para habilitar el registro.";
+      setStatus("Listo");
+    }
+
+    function onPlayerStateChange(event) {
+      if (event.data === YT.PlayerState.PLAYING) {
+        if (!hasStarted) {
+          hasStarted = true;
+        }
+        setStatus("En progreso");
+        startProgressTracking();
+      }
+
+      if (event.data === YT.PlayerState.PAUSED) {
+        stopProgressTracking();
+        setStatus("Pausado");
+        counter.textContent = "El video está en pausa. Debes terminarlo para habilitar el registro.";
+      }
+
+      if (event.data === YT.PlayerState.ENDED) {
+        enableButton();
+      }
+    }
+
+    function onPlayerError() {
+      errorBox.classList.add("show");
+      setStatus("Error");
+      counter.textContent = "No fue posible validar la reproducción embebida.";
+      stopProgressTracking();
+    }
+
+    window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
   </script>
 </body>
 </html>
