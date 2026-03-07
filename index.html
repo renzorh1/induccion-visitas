@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video de inducción</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #e7e0e2;
+      font-family: Arial, sans-serif;
+      color: #062b4f;
+    }
+
+    .container {
+      max-width: 420px;
+      margin: 0 auto;
+      padding: 20px 16px 30px;
+      text-align: center;
+    }
+
+    .welcome {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: #000000;
+      margin-bottom: 6px;
+    }
+
+    .subtitle-top {
+      font-size: 1.1rem;
+      font-weight: 400;
+      color: #000000;
+      margin-bottom: 18px;
+    }
+
+    .logo {
+      width: 95px;
+      margin-bottom: 12px;
+    }
+
+    .title {
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1.05;
+      margin-bottom: 20px;
+      color: #062b4f;
+    }
+
+    .video-box {
+      width: 100%;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #000;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.10);
+    }
+
+    .video-frame {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border: 0;
+      display: block;
+    }
+
+    .button {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      border-radius: 14px;
+      background: #9aa3ad;
+      color: white;
+      text-decoration: none;
+      font-weight: 700;
+      pointer-events: none;
+      transition: background 0.3s ease;
+    }
+
+    .button.enabled {
+      background: #062b4f;
+      pointer-events: auto;
+    }
+
+    .counter {
+      margin-top: 12px;
+      color: #4d5b6a;
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="welcome">¡Bienvenido!</div>
+    <div class="subtitle-top">Inducción de Visitas</div>
+
+    <img
+      class="logo"
+      src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/da/Repsol_2025_%28vertical%29.svg/960px-Repsol_2025_%28vertical%29.svg.png"
+      alt="Repsol"
+    />
+
+    <div class="title">Video de<br>inducción</div>
+
+    <div class="video-box">
+      <iframe
+        class="video-frame"
+        src="https://www.youtube-nocookie.com/embed/kpNMgjL8YMo?rel=0"
+        title="Video de inducción"
+        loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen>
+      </iframe>
+    </div>
+
+    <a
+      id="asistenciaBtn"
+      class="button"
+      href="https://www.google.com/webhp?hl=es&sa=X&ved=0ahUKEwizvMm6x4uTAxUylJUCHU9lMKYQPAgK"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Registra Aquí tu Asistencia
+    </a>
+
+    <div id="counter" class="counter">Habilitado en 20 segundos</div>
+  </div>
+
+  <script>
+    const btn = document.getElementById("asistenciaBtn");
+    const counter = document.getElementById("counter");
+    let seconds = 20;
+
+    const interval = setInterval(() => {
+      seconds--;
+
+      if (seconds > 0) {
+        counter.textContent = `Habilitado en ${seconds} segundos`;
+      } else {
+        clearInterval(interval);
+        btn.classList.add("enabled");
+        counter.textContent = "Ya puedes registrar tu asistencia";
+      }
+    }, 1000);
+  </script>
+</body>
+</html>
