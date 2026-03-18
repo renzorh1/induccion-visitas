@@ -19,9 +19,7 @@
       --radius-lg: 18px;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -92,64 +90,19 @@
     }
 
     .video-shell {
-      background: #0b0b0b;
+      background: #000;
       border-radius: 22px;
       overflow: hidden;
-      position: relative;
       width: 100%;
       aspect-ratio: 16 / 9;
     }
 
-    .video-placeholder,
-    .video-player {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-    }
-
-    .video-player iframe {
+    .video-shell video {
       width: 100%;
       height: 100%;
       display: block;
-      border: 0;
-    }
-
-    .video-placeholder {
-      background:
-        linear-gradient(rgba(6, 43, 79, 0.15), rgba(6, 43, 79, 0.20)),
-        linear-gradient(135deg, #d9dde3, #bcc6d2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-
-    .play-badge {
-      width: 82px;
-      height: 58px;
-      border-radius: 18px;
-      background: rgba(6, 43, 79, 0.95);
-      position: relative;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.35);
-      transition: transform 0.2s ease;
-    }
-
-    .video-placeholder:active .play-badge {
-      transform: scale(0.96);
-    }
-
-    .play-badge::before {
-      content: "";
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-35%, -50%);
-      width: 0;
-      height: 0;
-      border-top: 12px solid transparent;
-      border-bottom: 12px solid transparent;
-      border-left: 20px solid white;
+      object-fit: cover;
+      background: #000;
     }
 
     .status-card {
@@ -204,7 +157,7 @@
       height: 100%;
       background: linear-gradient(90deg, var(--navy), var(--navy-2));
       border-radius: 999px;
-      transition: width 1s linear;
+      transition: width 0.2s linear;
     }
 
     .counter {
@@ -243,10 +196,6 @@
       box-shadow: 0 14px 28px rgba(6, 43, 79, 0.24);
     }
 
-    .button.enabled:hover {
-      transform: translateY(-1px);
-    }
-
     .helper {
       margin-top: 10px;
       text-align: center;
@@ -254,29 +203,10 @@
       color: var(--muted);
     }
 
-    .warning {
-      margin-top: 14px;
-      background: #fff7ed;
-      border: 1px solid #fed7aa;
-      color: #9a3412;
-      border-radius: 16px;
-      padding: 12px;
-      font-size: 0.9rem;
-      line-height: 1.4;
-    }
-
     @media (max-width: 380px) {
-      .welcome {
-        font-size: 1.9rem;
-      }
-
-      .title {
-        font-size: 2.05rem;
-      }
-
-      .button {
-        font-size: 0.98rem;
-      }
+      .welcome { font-size: 1.9rem; }
+      .title { font-size: 2.05rem; }
+      .button { font-size: 0.98rem; }
     }
   </style>
 </head>
@@ -298,26 +228,10 @@
 
       <section class="panel">
         <div class="video-shell">
-          <div
-            id="videoPlaceholder"
-            class="video-placeholder"
-            tabindex="0"
-            role="button"
-            aria-label="Reproducir video"
-          >
-            <div class="play-badge"></div>
-          </div>
-
-          <div id="playerContainer" class="video-player" style="display:none;">
-            <iframe
-              id="spVideoFrame"
-              src=""
-              title="INDUCCIÓN VISITAS.mp4"
-              frameborder="0"
-              scrolling="no"
-              allowfullscreen>
-            </iframe>
-          </div>
+          <video id="miVideo" controls preload="metadata" playsinline>
+            <source src="assets/induccion-visitas.mp4" type="video/mp4" />
+            Tu navegador no soporta video HTML5.
+          </video>
         </div>
 
         <div class="status-card">
@@ -331,7 +245,7 @@
           </div>
 
           <div id="counter" class="counter">
-            Presiona reproducir. El botón se habilitará al finalizar el tiempo definido.
+            Reproduce y termina el video para habilitar el registro.
           </div>
         </div>
 
@@ -346,36 +260,18 @@
           >
             Registra Aquí tu Asistencia
           </a>
-          <div class="helper">
-            El botón se activará al completar el tiempo estimado del video.
-          </div>
-        </div>
-
-        <div class="warning">
-          Este video de SharePoint solo se mostrará a usuarios que tengan acceso al archivo en Microsoft 365.
+          <div class="helper">El botón se activará cuando el video finalice.</div>
         </div>
       </section>
     </div>
   </div>
 
   <script>
-    const SHAREPOINT_EMBED_URL =
-      "https://repsol365-my.sharepoint.com/personal/giovanacecilia_leyva_repsol_com/_layouts/15/embed.aspx?UniqueId=f89b51ad-cb43-4c9c-a471-0bc922d068f5&embed=%7B%22ust%22%3Afalse%2C%22hv%22%3A%22CopyEmbedCode%22%7D&referrer=StreamWebApp&referrerScenario=EmbedDialog.Create";
-
-    // Cambia este valor por la duración real del video en segundos
-    const VIDEO_DURATION_SECONDS = 360;
-
+    const video = document.getElementById("miVideo");
     const btn = document.getElementById("asistenciaBtn");
     const counter = document.getElementById("counter");
     const progressBar = document.getElementById("progressBar");
     const statusPill = document.getElementById("statusPill");
-    const placeholder = document.getElementById("videoPlaceholder");
-    const playerContainer = document.getElementById("playerContainer");
-    const frame = document.getElementById("spVideoFrame");
-
-    let started = false;
-    let seconds = VIDEO_DURATION_SECONDS;
-    let interval = null;
 
     function enableButton() {
       btn.classList.add("enabled");
@@ -384,38 +280,39 @@
       statusPill.classList.add("ready");
       progressBar.style.width = "100%";
       counter.textContent = "Video completado. Ya puedes registrar tu asistencia.";
-      clearInterval(interval);
     }
 
-    function startTimer() {
-      if (started) return;
-      started = true;
+    video.addEventListener("loadedmetadata", () => {
+      counter.textContent = "Video cargado. Reprodúcelo completo para habilitar el registro.";
+      statusPill.textContent = "Listo";
+    });
 
+    video.addEventListener("play", () => {
       statusPill.textContent = "En progreso";
-      frame.src = SHAREPOINT_EMBED_URL;
-      placeholder.style.display = "none";
-      playerContainer.style.display = "block";
+    });
 
-      interval = setInterval(() => {
-        seconds--;
-
-        const progress = ((VIDEO_DURATION_SECONDS - seconds) / VIDEO_DURATION_SECONDS) * 100;
-        progressBar.style.width = `${Math.min(progress, 100)}%`;
-
-        if (seconds > 0) {
-          counter.textContent = `Visualizando video... faltan aproximadamente ${seconds} segundos para habilitar el registro.`;
-        } else {
-          enableButton();
-        }
-      }, 1000);
-    }
-
-    placeholder.addEventListener("click", startTimer);
-    placeholder.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        startTimer();
+    video.addEventListener("pause", () => {
+      if (!video.ended) {
+        statusPill.textContent = "Pausado";
+        counter.textContent = "El video está en pausa. Debes terminarlo para habilitar el registro.";
       }
+    });
+
+    video.addEventListener("timeupdate", () => {
+      if (!video.duration || !isFinite(video.duration)) return;
+
+      const percent = (video.currentTime / video.duration) * 100;
+      progressBar.style.width = `${Math.min(percent, 100)}%`;
+
+      const secondsLeft = Math.max(Math.ceil(video.duration - video.currentTime), 0);
+
+      if (!video.ended && secondsLeft > 0) {
+        counter.textContent = `Visualizando video... faltan aproximadamente ${secondsLeft} segundos para completar la inducción.`;
+      }
+    });
+
+    video.addEventListener("ended", () => {
+      enableButton();
     });
   </script>
 </body>
