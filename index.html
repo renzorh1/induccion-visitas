@@ -17,15 +17,10 @@
       --shadow: 0 10px 30px rgba(6, 43, 79, 0.10);
       --radius-xl: 24px;
       --radius-lg: 18px;
-      --radius-md: 14px;
     }
 
     * {
       box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
     }
 
     body {
@@ -101,25 +96,19 @@
       border-radius: 22px;
       overflow: hidden;
       position: relative;
-    }
-
-    .video-shell::before {
-      content: "";
-      display: block;
       width: 100%;
-      padding-top: 56.25%;
+      aspect-ratio: 16 / 9;
     }
 
-    .video-player,
-    .video-placeholder {
+    .video-placeholder,
+    .video-player {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
     }
 
-    .video-player iframe,
-    #player {
+    .video-player iframe {
       width: 100%;
       height: 100%;
       display: block;
@@ -129,7 +118,7 @@
     .video-placeholder {
       background:
         linear-gradient(rgba(6, 43, 79, 0.15), rgba(6, 43, 79, 0.20)),
-        url("https://img.youtube.com/vi/kpNMgjL8YMo/hqdefault.jpg") center/cover no-repeat;
+        linear-gradient(135deg, #d9dde3, #bcc6d2);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -140,7 +129,7 @@
       width: 82px;
       height: 58px;
       border-radius: 18px;
-      background: rgba(255, 0, 0, 0.92);
+      background: rgba(6, 43, 79, 0.95);
       position: relative;
       box-shadow: 0 12px 30px rgba(0,0,0,0.35);
       transition: transform 0.2s ease;
@@ -215,7 +204,7 @@
       height: 100%;
       background: linear-gradient(90deg, var(--navy), var(--navy-2));
       border-radius: 999px;
-      transition: width 0.2s linear;
+      transition: width 1s linear;
     }
 
     .counter {
@@ -265,8 +254,7 @@
       color: var(--muted);
     }
 
-    .error-box {
-      display: none;
+    .warning {
       margin-top: 14px;
       background: #fff7ed;
       border: 1px solid #fed7aa;
@@ -275,10 +263,6 @@
       padding: 12px;
       font-size: 0.9rem;
       line-height: 1.4;
-    }
-
-    .error-box.show {
-      display: block;
     }
 
     @media (max-width: 380px) {
@@ -317,15 +301,22 @@
           <div
             id="videoPlaceholder"
             class="video-placeholder"
-            role="button"
-            aria-label="Reproducir video de inducción"
             tabindex="0"
+            role="button"
+            aria-label="Reproducir video"
           >
             <div class="play-badge"></div>
           </div>
 
           <div id="playerContainer" class="video-player" style="display:none;">
-            <div id="player"></div>
+            <iframe
+              id="spVideoFrame"
+              src=""
+              title="INDUCCIÓN VISITAS.mp4"
+              frameborder="0"
+              scrolling="no"
+              allowfullscreen>
+            </iframe>
           </div>
         </div>
 
@@ -340,7 +331,7 @@
           </div>
 
           <div id="counter" class="counter">
-            Reproduce y termina el video para habilitar el registro.
+            Presiona reproducir. El botón se habilitará al finalizar el tiempo definido.
           </div>
         </div>
 
@@ -355,145 +346,77 @@
           >
             Registra Aquí tu Asistencia
           </a>
-          <div class="helper">El botón se activará cuando el video finalice.</div>
+          <div class="helper">
+            El botón se activará al completar el tiempo estimado del video.
+          </div>
         </div>
 
-        <div id="errorBox" class="error-box">
-          No se pudo cargar el reproductor embebido. Si el video está restringido por YouTube, deberás usar otro video o abrirlo directamente en YouTube.
+        <div class="warning">
+          Este video de SharePoint solo se mostrará a usuarios que tengan acceso al archivo en Microsoft 365.
         </div>
       </section>
     </div>
   </div>
 
   <script>
-    const VIDEO_ID = "kpNMgjL8YMo";
+    const SHAREPOINT_EMBED_URL =
+      "https://repsol365-my.sharepoint.com/personal/giovanacecilia_leyva_repsol_com/_layouts/15/embed.aspx?UniqueId=f89b51ad-cb43-4c9c-a471-0bc922d068f5&embed=%7B%22ust%22%3Afalse%2C%22hv%22%3A%22CopyEmbedCode%22%7D&referrer=StreamWebApp&referrerScenario=EmbedDialog.Create";
+
+    // Cambia este valor por la duración real del video en segundos
+    const VIDEO_DURATION_SECONDS = 360;
+
     const btn = document.getElementById("asistenciaBtn");
     const counter = document.getElementById("counter");
     const progressBar = document.getElementById("progressBar");
     const statusPill = document.getElementById("statusPill");
     const placeholder = document.getElementById("videoPlaceholder");
     const playerContainer = document.getElementById("playerContainer");
-    const errorBox = document.getElementById("errorBox");
+    const frame = document.getElementById("spVideoFrame");
 
-    let player = null;
-    let progressInterval = null;
-    let playerReady = false;
-    let hasStarted = false;
-
-    function setStatus(text, ready = false) {
-      statusPill.textContent = text;
-      statusPill.classList.toggle("ready", ready);
-    }
+    let started = false;
+    let seconds = VIDEO_DURATION_SECONDS;
+    let interval = null;
 
     function enableButton() {
       btn.classList.add("enabled");
       btn.setAttribute("aria-disabled", "false");
+      statusPill.textContent = "Completado";
+      statusPill.classList.add("ready");
       progressBar.style.width = "100%";
       counter.textContent = "Video completado. Ya puedes registrar tu asistencia.";
-      setStatus("Completado", true);
-      clearInterval(progressInterval);
+      clearInterval(interval);
     }
 
-    function updateProgress() {
-      if (!player || typeof player.getDuration !== "function" || typeof player.getCurrentTime !== "function") {
-        return;
-      }
+    function startTimer() {
+      if (started) return;
+      started = true;
 
-      const duration = player.getDuration();
-      const current = player.getCurrentTime();
-
-      if (!duration || duration <= 0) {
-        return;
-      }
-
-      const percent = Math.min((current / duration) * 100, 100);
-      progressBar.style.width = percent + "%";
-
-      const secondsLeft = Math.max(Math.ceil(duration - current), 0);
-
-      if (secondsLeft > 0) {
-        counter.textContent = `Visualizando video... faltan aproximadamente ${secondsLeft} segundos para completar la inducción.`;
-      }
-    }
-
-    function startProgressTracking() {
-      clearInterval(progressInterval);
-      progressInterval = setInterval(updateProgress, 500);
-    }
-
-    function stopProgressTracking() {
-      clearInterval(progressInterval);
-    }
-
-    function loadPlayer() {
+      statusPill.textContent = "En progreso";
+      frame.src = SHAREPOINT_EMBED_URL;
       placeholder.style.display = "none";
       playerContainer.style.display = "block";
-      counter.textContent = "Cargando video...";
-      setStatus("Cargando");
 
-      const tag = document.createElement("script");
-      tag.src = "https://www.youtube.com/iframe_api";
-      document.head.appendChild(tag);
+      interval = setInterval(() => {
+        seconds--;
+
+        const progress = ((VIDEO_DURATION_SECONDS - seconds) / VIDEO_DURATION_SECONDS) * 100;
+        progressBar.style.width = `${Math.min(progress, 100)}%`;
+
+        if (seconds > 0) {
+          counter.textContent = `Visualizando video... faltan aproximadamente ${seconds} segundos para habilitar el registro.`;
+        } else {
+          enableButton();
+        }
+      }, 1000);
     }
 
-    placeholder.addEventListener("click", loadPlayer);
+    placeholder.addEventListener("click", startTimer);
     placeholder.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        loadPlayer();
+        startTimer();
       }
     });
-
-    function onYouTubeIframeAPIReady() {
-      player = new YT.Player("player", {
-        videoId: VIDEO_ID,
-        playerVars: {
-          rel: 0,
-          playsinline: 1,
-          modestbranding: 1
-        },
-        events: {
-          onReady: onPlayerReady,
-          onStateChange: onPlayerStateChange,
-          onError: onPlayerError
-        }
-      });
-    }
-
-    function onPlayerReady() {
-      playerReady = true;
-      counter.textContent = "Video cargado. Inicia la reproducción y míralo completo para habilitar el registro.";
-      setStatus("Listo");
-    }
-
-    function onPlayerStateChange(event) {
-      if (event.data === YT.PlayerState.PLAYING) {
-        if (!hasStarted) {
-          hasStarted = true;
-        }
-        setStatus("En progreso");
-        startProgressTracking();
-      }
-
-      if (event.data === YT.PlayerState.PAUSED) {
-        stopProgressTracking();
-        setStatus("Pausado");
-        counter.textContent = "El video está en pausa. Debes terminarlo para habilitar el registro.";
-      }
-
-      if (event.data === YT.PlayerState.ENDED) {
-        enableButton();
-      }
-    }
-
-    function onPlayerError() {
-      errorBox.classList.add("show");
-      setStatus("Error");
-      counter.textContent = "No fue posible validar la reproducción embebida.";
-      stopProgressTracking();
-    }
-
-    window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
   </script>
 </body>
 </html>
