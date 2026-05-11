@@ -4,22 +4,28 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Inducción de Visitas</title>
+
   <style>
     :root {
       --bg: #e7e0e2;
       --navy: #062b4f;
       --navy-2: #0d3a66;
+      --blue-soft: #dbeafe;
+      --blue-soft-text: #1e3a8a;
+      --blue-strong: #062b4f;
       --text: #1f2937;
       --muted: #667085;
       --card: #ffffff;
-      --disabled: #a7b0ba;
       --success: #1f7a3d;
+      --orange: #f45100;
       --shadow: 0 10px 30px rgba(6, 43, 79, 0.10);
       --radius-xl: 24px;
       --radius-lg: 18px;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
@@ -171,29 +177,56 @@
       margin-top: 14px;
     }
 
-    .button {
+    .register-button {
       width: 100%;
       display: inline-flex;
       justify-content: center;
       align-items: center;
       text-align: center;
       text-decoration: none;
-      padding: 16px 18px;
+      padding: 15px 18px;
       border-radius: 16px;
-      background: #f59e0b; /* naranja claro */
-      color: white;
+      background: var(--blue-soft);
+      color: #ffffff;
       font-weight: 800;
-      font-size: 1.03rem;
+      font-size: 1.05rem;
       letter-spacing: -0.2px;
       pointer-events: none;
-      box-shadow: 0 8px 22px rgba(0,0,0,0.10);
-      transition: transform 0.2s ease, background 0.25s ease, box-shadow 0.25s ease;
+      cursor: not-allowed;
+      box-shadow: 0 8px 20px rgba(6, 43, 79, 0.08);
+      transition:
+        transform 0.2s ease,
+        background 0.25s ease,
+        color 0.25s ease,
+        box-shadow 0.25s ease;
     }
 
-    .button.enabled {
-      background: linear-gradient(180deg, #ff6a00, #e65100); /* naranja fuerte tipo Repsol */
+    .register-button.enabled {
+      background: linear-gradient(180deg, #0d3a66, #062b4f);
+      color: #ffffff;
       pointer-events: auto;
+      cursor: pointer;
       box-shadow: 0 14px 28px rgba(6, 43, 79, 0.24);
+    }
+
+    .register-button.enabled:hover {
+      transform: translateY(-1px);
+    }
+
+    .safety-banner {
+      margin-top: 12px;
+      width: 100%;
+      padding: 16px 18px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #ff6a00, var(--orange));
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 1.02rem;
+      line-height: 1.35;
+      text-align: center;
+      letter-spacing: -0.2px;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.10);
+      user-select: none;
     }
 
     .helper {
@@ -204,15 +237,26 @@
     }
 
     @media (max-width: 380px) {
-      .welcome { font-size: 1.9rem; }
-      .title { font-size: 2.05rem; }
-      .button { font-size: 0.98rem; }
+      .welcome {
+        font-size: 1.9rem;
+      }
+
+      .title {
+        font-size: 2.05rem;
+      }
+
+      .register-button,
+      .safety-banner {
+        font-size: 0.98rem;
+      }
     }
   </style>
 </head>
+
 <body>
   <div class="page">
     <div class="container">
+
       <section class="hero-card">
         <h1 class="welcome">¡Bienvenido!</h1>
         <div class="subtitle-top">Inducción de Visitas</div>
@@ -252,17 +296,25 @@
         <div class="cta">
           <a
             id="asistenciaBtn"
-            class="button"
+            class="register-button"
             href="https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=TyElClLuPEi5a9x58yJ6b9qTKegBo1NNnvwGkwl8VLJUOUpCQTE5WFlGVlFNRDlPRUkwSVlXUVlTSiQlQCN0PWcu"
             target="_blank"
             rel="noopener noreferrer"
             aria-disabled="true"
           >
-            En Repsol, tu seguridad es nuestra prioridad
+            Registra tu Visita
           </a>
-          <div class="helper">El botón se activará cuando el video finalice.</div>
+
+          <div class="safety-banner">
+            En Repsol, tu seguridad es nuestra prioridad
+          </div>
+
+          <div id="helperText" class="helper">
+            El registro se activará cuando el video finalice.
+          </div>
         </div>
       </section>
+
     </div>
   </div>
 
@@ -272,14 +324,19 @@
     const counter = document.getElementById("counter");
     const progressBar = document.getElementById("progressBar");
     const statusPill = document.getElementById("statusPill");
+    const helperText = document.getElementById("helperText");
 
-    function enableButton() {
+    function enableRegisterButton() {
       btn.classList.add("enabled");
       btn.setAttribute("aria-disabled", "false");
+
       statusPill.textContent = "Completado";
       statusPill.classList.add("ready");
+
       progressBar.style.width = "100%";
-      counter.textContent = "Video completado. Ya puedes registrar tu asistencia.";
+
+      counter.textContent = "Video completado. Ya puedes registrar tu visita.";
+      helperText.textContent = "Registro habilitado. Presiona el botón para continuar.";
     }
 
     video.addEventListener("loadedmetadata", () => {
@@ -288,7 +345,9 @@
     });
 
     video.addEventListener("play", () => {
-      statusPill.textContent = "En progreso";
+      if (!video.ended) {
+        statusPill.textContent = "En progreso";
+      }
     });
 
     video.addEventListener("pause", () => {
@@ -312,7 +371,15 @@
     });
 
     video.addEventListener("ended", () => {
-      enableButton();
+      enableRegisterButton();
+    });
+
+    btn.addEventListener("click", (event) => {
+      const isEnabled = btn.classList.contains("enabled");
+
+      if (!isEnabled) {
+        event.preventDefault();
+      }
     });
   </script>
 </body>
